@@ -25,4 +25,4 @@ jobs:
       run: docker-compose up -d
     - name: Run Tests
       run: |
-        docker-composer run app sh -c "python3 manage.py test && flake8"
+        docker-compose run app sh -c "python3 manage.py test && flake8"
