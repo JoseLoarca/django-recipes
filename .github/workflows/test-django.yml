@@ -24,5 +24,7 @@ jobs:
     - name: Build composer
       run: docker-compose up -d
     - name: Run Tests
+      env:
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
       run: |
         docker-compose run app sh -c "python3 manage.py test && flake8"
