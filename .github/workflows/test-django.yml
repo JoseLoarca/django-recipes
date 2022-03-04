@@ -27,4 +27,4 @@ jobs:
       env:
         SECRET_KEY: ${{ secrets.SECRET_KEY }}
       run: |
-        docker-compose run app sh -c "python3 manage.py test && flake8"
+        docker-compose run app sh -c "python3 manage.py wait_for_db && python3 manage.py test && flake8"
