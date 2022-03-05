@@ -7,6 +7,7 @@ from rest_framework import status
 
 CREATE_USER_URL = reverse('user:create')
 TOKEN_URL = reverse('user:token')
+ME_URL = reverse('user:me')
 
 
 def create_user(**params):
@@ -112,3 +113,53 @@ class PublicUserApiTests(TestCase):
 
         self.assertNotIn('token', res.data)
         self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_retrieve_user_unauthorized(self) -> None:
+        """ Test authentication is required for users """
+        res = self.client.get(ME_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class PrivateUserApiTests(TestCase):
+    """ Test API requests that require authentication """
+
+    def setUp(self) -> None:
+        self.user = create_user(
+            email='test@gmail.com',
+            password='myinsecurepassword!',
+            name='API User'
+        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+
+    def test_retrieve_profile_success(self) -> None:
+        """ Test retrieving profile for an authenticated user """
+        res = self.client.get(ME_URL)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, {
+            'name': 'API User',
+            'email': 'test@gmail.com',
+        })
+
+    def test_post_me_not_allowed(self) -> None:
+        """ Test POST is not allowed on ME URL """
+        res = self.client.post(ME_URL, {})
+
+        self.assertEqual(res.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_update_user_profile(self) -> None:
+        """ Test updating the user profile """
+        payload = {
+            'name': 'New API User',
+            'password': 'newinsecurepassword!'
+        }
+
+        res = self.client.patch(ME_URL, payload)
+
+        self.user.refresh_from_db()
+
+        self.assertEqual(self.user.name, payload['name'])
+        self.assertTrue(self.user.check_password(payload['password']))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
