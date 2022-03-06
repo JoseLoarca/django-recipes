@@ -12,21 +12,8 @@ from recipe.serializers import TagSerializer
 TAGS_URL = reverse('recipe:tag-list')
 
 
-class UnauthorizedApiTests(TestCase):
-    """ Test unauthorized API calls """
-
-    def setUp(self) -> None:
-        self.client = APIClient()
-
-    def test_auth_required(self) -> None:
-        """ Test authentication is required for retrieving tags """
-        res = self.client.get(TAGS_URL)
-
-        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
-
-
-class PrivateTagsApiTests(TestCase):
-    """ Test the private tags API """
+class TagsApiTests(TestCase):
+    """ Test tags API """
 
     def setUp(self) -> None:
         self.client = APIClient()
